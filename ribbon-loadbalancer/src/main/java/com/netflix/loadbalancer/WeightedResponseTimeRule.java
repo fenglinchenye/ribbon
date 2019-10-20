@@ -94,7 +94,8 @@ public class WeightedResponseTimeRule extends RoundRobinRule {
     
     // holds the accumulated weight from index 0 to current index
     // for example, element at index 2 holds the sum of weight of servers from 0 to 2
-    private volatile List<Double> accumulatedWeights = new ArrayList<Double>();
+    // 权重
+    private volatile List<Double> accumulatedWeights = new ArrayList<>();
     
 
     private final Random random = new Random();
@@ -165,6 +166,7 @@ public class WeightedResponseTimeRule extends RoundRobinRule {
 
         while (server == null) {
             // get hold of the current reference in case it is changed from the other thread
+//            获取当前引用，以防其他线程更改当前引用
             List<Double> currentWeights = accumulatedWeights;
             if (Thread.interrupted()) {
                 return null;
@@ -180,10 +182,13 @@ public class WeightedResponseTimeRule extends RoundRobinRule {
             int serverIndex = 0;
 
             // last one in the list is the sum of all weights
+            // 获取列表中的权重总和
             double maxTotalWeight = currentWeights.size() == 0 ? 0 : currentWeights.get(currentWeights.size() - 1); 
             // No server has been hit yet and total weight is not initialized
             // fallback to use round robin
             if (maxTotalWeight < 0.001d || serverCount != currentWeights.size()) {
+                // 不满足权重时。按照轮询
+                // 一开始的响应时间都是0,不满足权重时，则按照轮询策略
                 server =  super.choose(getLoadBalancer(), key);
                 if(server == null) {
                     return server;
@@ -222,6 +227,7 @@ public class WeightedResponseTimeRule extends RoundRobinRule {
     }
 
     class DynamicServerWeightTask extends TimerTask {
+        @Override
         public void run() {
             ServerWeight serverWeight = new ServerWeight();
             try {

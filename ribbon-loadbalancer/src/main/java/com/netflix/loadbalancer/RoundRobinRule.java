@@ -17,7 +17,6 @@
  */
 package com.netflix.loadbalancer;
 
-import com.netflix.client.config.IClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The most well known and basic load balancing strategy, i.e. Round Robin Rule.
- *
+ * 轮询
  * @author stonse
  * @author Nikos Michalakis <nikos@netflix.com>
  *
@@ -55,13 +54,16 @@ public class RoundRobinRule extends AbstractLoadBalancerRule {
         }
 
         Server server = null;
+        // count  控制查找的轮数
         int count = 0;
         while (server == null && count++ < 10) {
+            // 获取可达到的server
             List<Server> reachableServers = lb.getReachableServers();
+            // 获取所有的server
             List<Server> allServers = lb.getAllServers();
             int upCount = reachableServers.size();
             int serverCount = allServers.size();
-
+            // 判别是否有可用的 server
             if ((upCount == 0) || (serverCount == 0)) {
                 log.warn("No up servers available from load balancer: " + lb);
                 return null;
@@ -72,6 +74,9 @@ public class RoundRobinRule extends AbstractLoadBalancerRule {
 
             if (server == null) {
                 /* Transient. */
+//                Thread.yield()方法作用是：暂停当前正在执行的线程对象，并执行其他线程。
+//                yield()应该做的是让当前运行线程回到可运行状态，以允许具有相同优先级的其他线程获得运行机会。因此，使用yield()的目的是让相同优先级的线程之间能适当的轮转执行。但是，实际中无法保证yield()达到让步目的，因为让步的线程还有可能被线程调度程序再次选中。
+//                结论：yield()从未导致线程转到等待/睡眠/阻塞状态。在大多数情况下，yield()将导致线程从运行状态转到可运行状态，但有可能没有效果。
                 Thread.yield();
                 continue;
             }
@@ -95,10 +100,12 @@ public class RoundRobinRule extends AbstractLoadBalancerRule {
      * Inspired by the implementation of {@link AtomicInteger#incrementAndGet()}.
      *
      * @param modulo The modulo to bound the value of the counter.
+     *             绑定计数器值的模。
      * @return The next value.
      */
     private int incrementAndGetModulo(int modulo) {
         for (;;) {
+            // 原子操作 每次加一
             int current = nextServerCyclicCounter.get();
             int next = (current + 1) % modulo;
             if (nextServerCyclicCounter.compareAndSet(current, next))

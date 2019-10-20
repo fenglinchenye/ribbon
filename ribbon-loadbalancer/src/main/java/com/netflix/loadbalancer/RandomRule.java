@@ -17,7 +17,6 @@
  */
 package com.netflix.loadbalancer;
 
-import com.netflix.client.config.IClientConfig;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -56,7 +55,7 @@ public class RandomRule extends AbstractLoadBalancerRule {
                  */
                 return null;
             }
-
+            // 获取随机的数
             int index = chooseRandomInt(serverCount);
             server = upList.get(index);
 

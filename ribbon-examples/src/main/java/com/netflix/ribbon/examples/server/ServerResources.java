@@ -155,6 +155,7 @@ public class ServerResources {
             @Override
             public void write(OutputStream output) throws IOException,
                     WebApplicationException {
+
                 for (String line: streamContent) {
                     String eventLine = line + "\n\n";
                     output.write(eventLine.getBytes("UTF-8"));

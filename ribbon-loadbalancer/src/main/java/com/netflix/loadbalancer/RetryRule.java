@@ -82,10 +82,11 @@ public class RetryRule extends AbstractLoadBalancerRule {
 		Server answer = null;
 
 		answer = subRule.choose(key);
-
+		// 时间未到
 		if (((answer == null) || (!answer.isAlive()))
 				&& (System.currentTimeMillis() < deadline)) {
 
+			// 创建一个打断线程的任务
 			InterruptTask task = new InterruptTask(deadline
 					- System.currentTimeMillis());
 

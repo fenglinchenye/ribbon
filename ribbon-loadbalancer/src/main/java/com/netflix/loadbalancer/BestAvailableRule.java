@@ -22,6 +22,7 @@ import java.util.List;
 /**
  * A rule that skips servers with "tripped" circuit breaker and picks the
  * server with lowest concurrent requests.
+ * 跳过带有“跳闸”断路器的服务器并选择并发请求最少的服务器的规则。
  * <p>
  * This rule should typically work with {@link ServerListSubsetFilter} which puts a limit on the 
  * servers that is visible to the rule. This ensure that it only needs to find the minimal 
@@ -46,9 +47,13 @@ public class BestAvailableRule extends ClientConfigEnabledRoundRobinRule {
         long currentTime = System.currentTimeMillis();
         Server chosen = null;
         for (Server server: serverList) {
+            // 获取每个server 的状态
             ServerStats serverStats = loadBalancerStats.getSingleServerStat(server);
+            // 判断当前时间是否处于断路器的跳闸状态
             if (!serverStats.isCircuitBreakerTripped(currentTime)) {
+                // 获取可用连接数量
                 int concurrentConnections = serverStats.getActiveRequestsCount(currentTime);
+                // 循环比较获取最小的连接的数量
                 if (concurrentConnections < minimalConcurrentConnections) {
                     minimalConcurrentConnections = concurrentConnections;
                     chosen = server;
